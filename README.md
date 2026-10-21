@@ -60,8 +60,10 @@ A scoped context is a good fit when the request is simple: one handler, one cont
 ## Project layout
 
 ```
-global.json                  SDK pin: 10.0.402 or later, within the 10.0 band
+efcore-anti-patterns.slnx    solution; SharedTrackerDemo is the startup project
+global.json                  any .NET 10 SDK (10.0.100 or later)
 expected-output.txt          output the demo should print
+.vscode/                     Visual Studio Code launch and build tasks
 SharedTrackerDemo/
   SharedTrackerDemo.csproj   net10.0, EF Core Sqlite 10.0.13
   Program.cs                 seeds data, runs the three cases, checks the writes
@@ -76,11 +78,29 @@ SharedTrackerDemo/
 
 ## How to run it
 
-You need the .NET 10 SDK, 10.0.402 or later. `global.json` sets `rollForward` to `latestFeature`, so a later 10.0 SDK is fine. Delete `global.json`, or edit it, if you need to build with a newer major SDK.
+You need a .NET 10 SDK. `global.json` sets the minimum to 10.0.100 and `rollForward` to `latestFeature`, so any installed .NET 10 SDK is accepted, including a later feature band such as 10.0.1xx or 10.0.4xx. The highest installed 10.0 SDK is the one that runs. The file does not roll forward to .NET 11, and a .NET 8 or 9 SDK is not enough.
 
 ```bash
-cd SharedTrackerDemo
-dotnet run -c Release
+git clone https://github.com/nabs-darrel-schreyer/efcore-anti-patterns.git
+cd efcore-anti-patterns
+```
+
+**Visual Studio or Rider.** Open [`efcore-anti-patterns.slnx`](efcore-anti-patterns.slnx) and press F5. `SharedTrackerDemo` is the only project and is marked `DefaultStartup`, so it is the startup project.
+
+**Visual Studio Code.** Open the folder and press F5. [`.vscode/launch.json`](.vscode/launch.json) builds the solution and starts `SharedTrackerDemo`.
+
+**CLI, from the repo root.**
+
+```bash
+dotnet run --project SharedTrackerDemo
+```
+
+`dotnet build` at the root builds the solution. A plain `dotnet run` there does not start the demo: `dotnet run` looks for a project in the current directory, the root has a solution file rather than a project, and the CLI does not launch the solution's startup project. From inside `SharedTrackerDemo`, `dotnet run` is enough.
+
+To match the checked-in output, use Release:
+
+```bash
+dotnet run --project SharedTrackerDemo -c Release
 ```
 
 Compare the console output with [`expected-output.txt`](expected-output.txt). Every check should print `[PASS]`, and the process should finish with `All checks passed.`
