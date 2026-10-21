@@ -1,0 +1,34 @@
+@host = http://localhost:5181
+
+### Customers. The inherited repository loads the whole graph, then this filters in memory.
+GET {{host}}/customers?search=aroha
+Accept: application/json
+
+### Products
+GET {{host}}/products
+Accept: application/json
+
+### Orders already in the database
+GET {{host}}/orders
+Accept: application/json
+
+### Place an order for Aroha (customer 1). Watch the console: UPDATE Customers is saved with the order.
+POST {{host}}/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerId": 1,
+  "lines": [
+    { "productId": 1, "quantity": 2 }
+  ]
+}
+
+### Rename by loading the entity and calling SaveChanges.
+PATCH {{host}}/customers/2
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Nikau Rangi"
+}

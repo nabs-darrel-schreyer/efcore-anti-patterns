@@ -1,0 +1,133 @@
+@page "/"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@inject ShopClient Shop
+
+<PageTitle>Shop desk</PageTitle>
+
+<div class="desk">
+    <form class="order-form" @onsubmit="PlaceOnBoth" @onsubmit:preventDefault="true">
+        <h2>Place an order</h2>
+        <label for="customer">Customer</label>
+        <select id="customer" @bind="customerId">
+            @foreach (var customer in FormCustomers)
+            {
+                <option value="@customer.Id">@customer.Name.Trim()</option>
+            }
+        </select>
+        <label for="product">Product</label>
+        <select id="product" @bind="productId">
+            @foreach (var product in FormProducts)
+            {
+                <option value="@product.Id">@product.Name · @Money(product.PriceCents)</option>
+            }
+        </select>
+        <label for="quantity">Quantity</label>
+        <input id="quantity" type="number" min="1" @bind="quantity" />
+        <button type="submit" disabled="@busy">Place this order on both</button>
+        @if (!string.IsNullOrEmpty(formError))
+        {
+            <p class="error">@formError</p>
+        }
+    </form>
+
+    <div class="columns">
+        <DeskColumn Title="Anti-patterns" Tone="anti" Customers="anti.Customers" Orders="anti.Orders" LastOrder="anti.LastOrder" Error="@anti.Error" />
+        <DeskColumn Title="Best practice" Tone="best" Customers="best.Customers" Orders="best.Orders" LastOrder="best.LastOrder" Error="@best.Error" />
+    </div>
+</div>
+
+<section class="section">
+    <h2>Where the SQL shows up</h2>
+    <p>
+        The cards list the writes each API reported. The Aspire dashboard is the place to compare the traces:
+        open <strong>Traces</strong>, then the <strong>POST /orders</strong> request for each API.
+        Anti-patterns shows an <strong>UPDATE Customers</strong> span beside <strong>INSERT Orders</strong>.
+        Best practice shows the insert and no customer update. Open a span to read <code>db.statement</code>.
+    </p>
+</section>
+
+@code {
+    private readonly Desk anti = new();
+    private readonly Desk best = new();
+    private int customerId;
+    private int productId = 1;
+    private int quantity = 2;
+    private bool busy;
+    private string? formError;
+
+    private IReadOnlyList<CustomerSummary> FormCustomers =>
+        best.Customers.Count > 0 ? best.Customers : anti.Customers;
+
+    private IReadOnlyList<ProductSummary> FormProducts =>
+        best.Products.Count > 0 ? best.Products : anti.Products;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadAsync(anti, ShopActivity.AntiPatterns), LoadAsync(best, ShopActivity.BestPractice));
+        var aroha = FormCustomers.FirstOrDefault(c => c.Email == ShopSeeder.ArohaEmail) ?? FormCustomers.FirstOrDefault();
+        if (aroha is not null)
+            customerId = aroha.Id;
+        if (FormProducts.Count > 0)
+            productId = FormProducts[0].Id;
+    }
+
+    private async Task PlaceOnBoth()
+    {
+        busy = true;
+        formError = null;
+        var request = new PlaceOrderRequest(customerId, [new OrderLineRequest(productId, quantity)]);
+        try
+        {
+            await Task.WhenAll(
+                PlaceAsync(anti, ShopActivity.AntiPatterns, request),
+                PlaceAsync(best, ShopActivity.BestPractice, request));
+            await Task.WhenAll(
+                LoadAsync(anti, ShopActivity.AntiPatterns),
+                LoadAsync(best, ShopActivity.BestPractice));
+        }
+        finally
+        {
+            busy = false;
+        }
+    }
+
+    private async Task PlaceAsync(Desk desk, string app, PlaceOrderRequest request)
+    {
+        try
+        {
+            desk.Error = null;
+            desk.LastOrder = await Shop.PlaceAsync(app, request);
+        }
+        catch (Exception ex)
+        {
+            desk.LastOrder = null;
+            desk.Error = ex.Message;
+            formError = "One of the APIs did not accept the order. Details are in that column.";
+        }
+    }
+
+    private async Task LoadAsync(Desk desk, string app)
+    {
+        try
+        {
+            desk.Customers = await Shop.CustomersAsync(app);
+            desk.Products = await Shop.ProductsAsync(app);
+            desk.Orders = await Shop.OrdersAsync(app);
+        }
+        catch (Exception ex)
+        {
+            desk.Error = ex.Message;
+        }
+    }
+
+    private static string Money(int cents) => (cents / 100m).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-NZ"));
+
+    private sealed class Desk
+    {
+        public IReadOnlyList<CustomerSummary> Customers { get; set; } = [];
+        public IReadOnlyList<ProductSummary> Products { get; set; } = [];
+        public IReadOnlyList<OrderSummary> Orders { get; set; } = [];
+        public PlaceOrderResponse? LastOrder { get; set; }
+        public string? Error { get; set; }
+    }
+}

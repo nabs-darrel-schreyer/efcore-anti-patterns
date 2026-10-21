@@ -2,13 +2,13 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "SharedTrackerDemo",
+      "name": "Aspire AppHost",
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/SharedTrackerDemo/bin/Debug/net10.0/SharedTrackerDemo.dll",
+      "program": "${workspaceFolder}/src/Shop.AppHost/bin/Debug/net10.0/Shop.AppHost.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/SharedTrackerDemo",
+      "cwd": "${workspaceFolder}/src/Shop.AppHost",
       "console": "internalConsole",
       "stopAtEntry": false
     }

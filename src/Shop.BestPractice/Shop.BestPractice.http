@@ -1,0 +1,34 @@
+@host = http://localhost:5182
+
+### Customers. This is a no-tracking projection; the search runs in SQL.
+GET {{host}}/customers?search=aroha
+Accept: application/json
+
+### Products
+GET {{host}}/products
+Accept: application/json
+
+### Orders already in the database
+GET {{host}}/orders
+Accept: application/json
+
+### Place an order for Aroha (customer 1). The console should show INSERT Orders and no UPDATE Customers.
+POST {{host}}/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerId": 1,
+  "lines": [
+    { "productId": 1, "quantity": 2 }
+  ]
+}
+
+### Rename with ExecuteUpdate. One UPDATE, and the customer row is not loaded.
+PATCH {{host}}/customers/2
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Nikau Rangi"
+}
