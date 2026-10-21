@@ -1,3 +1,9 @@
 <Solution>
-  <Project Path="SharedTrackerDemo/SharedTrackerDemo.csproj" DefaultStartup="true" />
+  <Project Path="src/Shop.AppHost/Shop.AppHost.csproj" DefaultStartup="true" />
+  <Project Path="src/Shop.ServiceDefaults/Shop.ServiceDefaults.csproj" />
+  <Project Path="src/Shop.Shared/Shop.Shared.csproj" />
+  <Project Path="src/Shop.AntiPatterns/Shop.AntiPatterns.csproj" />
+  <Project Path="src/Shop.BestPractice/Shop.BestPractice.csproj" />
+  <Project Path="src/Shop.Web/Shop.Web.csproj" />
+  <Project Path="tests/Shop.Tests/Shop.Tests.csproj" />
 </Solution>

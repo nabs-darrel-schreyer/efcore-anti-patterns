@@ -1,0 +1,65 @@
+<section class="panel @Tone">
+    <h2>@Title</h2>
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <p class="error">@Error</p>
+    }
+    @if (LastOrder is { } order)
+    {
+        <div class="result">
+            <h3>@order.Greeting</h3>
+            <p>Stored name: <code>@order.StoredCustomerName</code></p>
+            @if (order.CustomerNameChanged)
+            {
+                <p><span class="badge warn">Customer row changed</span></p>
+                <p>Before: <code>@order.CustomerNameBefore</code></p>
+            }
+            else
+            {
+                <p><span class="badge ok">Customer row unchanged</span></p>
+            }
+            <p>Writes: @(order.Writes.Count == 0 ? "none" : string.Join(", ", order.Writes))</p>
+            @if (order.Statements.Count > 0)
+            {
+                <pre>@string.Join("\n\n", order.Statements)</pre>
+            }
+        </div>
+    }
+    <h3>Customers</h3>
+    <table>
+        <thead><tr><th>Name</th><th>Orders</th></tr></thead>
+        <tbody>
+        @foreach (var customer in Customers)
+        {
+            <tr>
+                <td><code>@customer.Name</code></td>
+                <td>@customer.OrderCount</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+    <h3>Orders</h3>
+    <table>
+        <thead><tr><th>Customer</th><th>Total</th></tr></thead>
+        <tbody>
+        @foreach (var existing in Orders)
+        {
+            <tr>
+                <td>@existing.CustomerName.Trim()</td>
+                <td>@Money(existing.TotalCents)</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter, EditorRequired] public string Tone { get; set; } = "";
+    [Parameter] public IReadOnlyList<CustomerSummary> Customers { get; set; } = [];
+    [Parameter] public IReadOnlyList<OrderSummary> Orders { get; set; } = [];
+    [Parameter] public PlaceOrderResponse? LastOrder { get; set; }
+    [Parameter] public string? Error { get; set; }
+
+    private static string Money(int cents) => (cents / 100m).ToString("C", System.Globalization.CultureInfo.GetCultureInfo("en-NZ"));
+}
