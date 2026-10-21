@@ -2,7 +2,7 @@
 
 Companion code for Darrel Schreyer's LinkedIn article, *Your DbContext Is Already the Repository: Three EF Core Anti-Patterns Worth Unlearning* ([article link]).
 
-`SharedTrackerDemo` is a .NET 8 console app. It uses EF Core 8 against an in-memory SQLite database to show what a shared change tracker actually writes, and what changes when each unit of work gets its own short-lived `DbContext`.
+`SharedTrackerDemo` is a .NET 10 console app. It uses EF Core 10 against an in-memory SQLite database to show what a shared change tracker actually writes, and what changes when each unit of work gets its own short-lived `DbContext`.
 
 ## The three anti-patterns
 
@@ -60,10 +60,10 @@ A scoped context is a good fit when the request is simple: one handler, one cont
 ## Project layout
 
 ```
-global.json                  SDK pin: 8.0.400 or later, within the 8.0 band
+global.json                  SDK pin: 10.0.402 or later, within the 10.0 band
 expected-output.txt          output the demo should print
 SharedTrackerDemo/
-  SharedTrackerDemo.csproj   net8.0, EF Core Sqlite 8.0.11
+  SharedTrackerDemo.csproj   net10.0, EF Core Sqlite 10.0.13
   Program.cs                 seeds data, runs the three cases, checks the writes
   Model.cs                   Customer, Order, ShopContext
   ScopedServices.cs          one scoped context shared across the request
@@ -76,7 +76,7 @@ SharedTrackerDemo/
 
 ## How to run it
 
-You need the .NET 8 SDK, 8.0.400 or later. `global.json` sets `rollForward` to `latestFeature`, so a later 8.0 SDK is fine. Delete `global.json`, or edit it, if you need to build with a newer major SDK.
+You need the .NET 10 SDK, 10.0.402 or later. `global.json` sets `rollForward` to `latestFeature`, so a later 10.0 SDK is fine. Delete `global.json`, or edit it, if you need to build with a newer major SDK.
 
 ```bash
 cd SharedTrackerDemo
