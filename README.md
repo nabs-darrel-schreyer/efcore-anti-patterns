@@ -30,7 +30,7 @@ The unit of work is not a type you inject. It is the lifetime of a `DbContext` i
 | `AddDbContextFactory` | `INSERT Orders` |
 | `AddPooledDbContextFactory` | `INSERT Orders` |
 
-With the shared tracker, the customer's stored name becomes `AROHA NGATA`. With either factory, it stays `  Aroha Ngata ` (leading and trailing spaces included). A `WriteLog` interceptor records every INSERT, UPDATE and DELETE. `Program.cs` checks the results and exits with code 1 if any check fails.
+With the shared tracker, the customer's stored name becomes `AROHA NGATA`. With either factory, the row is left as it was seeded: two leading spaces, `Aroha Ngata`, and one trailing space. A `WriteLog` interceptor records every INSERT, UPDATE and DELETE. `Program.cs` checks the results and exits with code 1 if any check fails.
 
 The factory cases also run the original mutating greeting inside its own short-lived context. Disposal throws that change away, so isolation alone stops the leak. The projection version makes the intent obvious: read the name, format the string, and leave the row alone.
 
